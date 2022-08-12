@@ -1,7 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { filterImageFromURL, deleteLocalFiles, requireAuth, generateJWT } from './util/util';
-import * as jwt from 'jsonwebtoken'
 (async () => {
 
   // Init the Express application
