@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles } from './util/util';
-
+import { filterImageFromURL, deleteLocalFiles, requireAuth, generateJWT } from './util/util';
+import * as jwt from 'jsonwebtoken'
 (async () => {
 
   // Init the Express application
@@ -28,15 +28,26 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-  app.get("/filteredimage", async (req: Request, res: Response) => {
 
-    let { image_url } = req.query
-    if(!image_url){
-      res.status(422).send({message: "Image url is required"})
+  app.get("/filteredimage", requireAuth, async (req: Request, res: Response) => {
+
+    try {
+      let { image_url } = req.query
+      if (!image_url) {
+        res.status(422).send({ message: "Image url is required" })
+      }
+      let filteredimage = await filterImageFromURL(image_url)
+      res.status(200).sendFile(filteredimage)
+    } catch (e) {
+      res.status(500).send(e)
     }
-    let filteredimage = await filterImageFromURL(image_url)
-    res.status(200).sendFile(filteredimage)
   })
+
+  app.get("/get_token", async (req, res)=>{
+    let token = generateJWT()
+    res.status(200).send({token: token})
+  })
+
 
   //! END @TODO1
 
